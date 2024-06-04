@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="icon" href="data:,">
+    <title>MOSOM App!</title>
+
+</head>
+<body>
+    <div class="animated-background"></div>
+    <div class="content">
+        <div class="card">
+            <h2>Location A</h2>
+            <div class="input-container">
+                <input type="text" id="cityInput1" placeholder="Enter city name">
+                <input type="text" id="countryInput1" placeholder="Enter country name">
+                <div class="button-container">
+                <button type="button" onclick="api(1)">Get Weather</button>
+                </div>
+            </div>
+            <div id="weatherInfo1" class="info"></div>
+        </div>
+        <div class="card">
+            <h2>Location B</h2>
+            <div class="input-container">
+                <input type="text" id="cityInput2" placeholder="Enter city name">
+                <input type="text" id="countryInput2" placeholder="Enter country name">
+                <div class="button-container">
+                <button type="button" onclick="api(2)">Get Weather</button>
+                </div>
+            </div>
+            <div id="weatherInfo2" class="info"></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            api(1, 'Siliguri');
+            api(2, 'Dehli');
+        });
+
+        function api(locationNumber, city) {
+            if (!city) {
+                city = document.getElementById("cityInput" + locationNumber).value;
+            }
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=33245c9b7b1c0e22dab6f6fb2bae3033&units=metric`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data);
+                    displayWeather(data, locationNumber);
+                })
+                .catch(error => {
+         console.error('Error fetching weather data:', error);
+            const weatherInfoDiv = document.getElementById("weatherInfo" + locationNumber);
+            weatherInfoDiv.innerHTML = `<p>Place not found on Earth!</p><p>Maybe it's on another planet?</p>`;
+                });
+        }
+
+        function displayWeather(weather, locationNumber) {
+    const weatherInfoDiv = document.getElementById("weatherInfo" + locationNumber);
+    const temperatureText = weather.main.temp;
+
+
+    const temperature = parseFloat(temperatureText);
+
+
+    const temperatureRanges = [
+        { min: -Infinity, max: 0, textColor: 'blue' }, // Blue
+        { min: 0, max: 10, textColor: 'cyan' }, // Cyan
+        { min: 10, max: 20, textColor: 'green' }, // Green
+        { min: 20, max: 25, textColor: 'yellow' }, // Yellow
+        { min: 25, max: 30, textColor: 'orange' }, // Orange
+        { min: 30, max: 35, textColor: 'red' }, // Red
+        { min: 35, max: Infinity, textColor: 'red' } // Red
+    ];
+
+
+    let textColor = '#333';
+    for (const range of temperatureRanges) {
+        if (temperature >= range.min && temperature < range.max) {
+            textColor = range.textColor;
+            break;
+        }
+    }
+    const iconUrl = `http://openweathermap.org/img/w/${weather.weather[0].icon}.png`;
+
+
+weatherInfoDiv.innerHTML = `
+    <img src="${iconUrl}" alt="Weather Icon">
+    <h3>${weather.name}, ${weather.sys.country}</h3>
+    <h4 style="color: ${textColor}">Temperature: ${temperatureText}°C</h4>
+    <p>Feels Like: ${weather.main.feels_like}°C</p>
+    <h3>${weather.weather[0].description}</h3>
+    <p>Wind Speed: ${weather.wind.speed} m/s</p>
+    <p>Humidity: ${weather.main.humidity}%</p>
+    <p>Visibility: ${weather.visibility} meters</p>
+    <p>Last Updated: ${new Date(weather.dt * 1000).toLocaleString()}</p>
+`;
+}
+
+
+    </script>
+</body>
+</html>
+
